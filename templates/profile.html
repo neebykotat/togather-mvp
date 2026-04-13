@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+<div id="profileMainScreen">
+    <header class="screen-header profile-header">
+        <div class="header-placeholder"></div>
+        <div class="screen-title">Профиль</div>
+        <button class="gear-btn" type="button" id="openSettingsBtn">⚙</button>
+    </header>
+
+    <section class="profile-top-card" id="profileCard"></section>
+
+    <section class="page-block">
+        <div class="block-title page-block-title">В фокусе</div>
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="stat-label">Сегодня</div>
+                <div class="stat-value" id="todayMinutes">2 ч 15 м</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Неделя</div>
+                <div class="stat-value" id="weekMinutes">2 ч 15 м</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="page-block">
+        <div class="block-title page-block-title">Достижения</div>
+        <div class="achievements-row" id="achievementsList"></div>
+    </section>
+
+    <section class="page-block">
+        <div class="row-between">
+            <div class="block-title page-block-title">История сессий</div>
+            <button class="plain-mini-btn" type="button" id="openHistoryModalBtn">Показать все</button>
+        </div>
+        <div id="historyList" class="history-list"></div>
+    </section>
+</div>
+
+<div id="profileSettingsScreen" class="hidden">
+    <header class="screen-header">
+        <button class="circle-back-btn" id="closeSettingsBtn" type="button">‹</button>
+        <div></div>
+        <div></div>
+    </header>
+
+    <section class="settings-avatar-wrap" id="settingsProfileTop">
+    <form id="profileSettingsForm" enctype="multipart/form-data">
+        <input type="file" id="avatarInput" name="avatar" accept="image/*" hidden>
+
+        <button type="button" class="settings-avatar-button" id="avatarButton">
+            <div class="profile-avatar-big profile-avatar-big--settings">
+                <img id="settingsAvatarPreview" src="" alt="avatar">
+            </div>
+        </button>
+
+        <button type="button" class="settings-name-button" id="editNameBtn">
+            <div class="profile-name-main" id="settingsProfileName">Имя пользователя</div>
+        </button>
+
+        <div class="hidden settings-name-edit-block" id="nameEditBlock">
+            <input type="text" id="profileNameInput" placeholder="Введите новое имя">
+        </div>
+    </form>
+</section>
+
+    <section class="page-block">
+        <section class="page-block">
+            <div class="soft-card settings-card">
+                <div class="settings-title">Оформление</div>
+
+                <div class="settings-row">
+                    <span>Тёмная тема</span>
+                    <label class="switch">
+                        <input type="checkbox" id="darkThemeToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+        <div class="soft-card settings-card">
+            <div class="settings-title">Уведомления</div>
+
+            <div class="settings-row">
+                <span>Утренний ритуал</span>
+                <label class="switch">
+                    <input type="checkbox" id="morningRitualToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="settings-row">
+                <span>Вечерний ритуал</span>
+                <label class="switch">
+                    <input type="checkbox" id="eveningRitualToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </section>
+
+<section class="page-block">
+    <div class="soft-card settings-card">
+        <div class="settings-title">Что показывать в кружке</div>
+
+        <div class="settings-row">
+            <span>Статус</span>
+            <label class="switch">
+                <input type="checkbox" id="showStatusToggle" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="settings-row">
+            <span>Цели</span>
+            <label class="switch">
+                <input type="checkbox" id="showGoalsToggle" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="settings-row">
+            <span>Достижения</span>
+            <label class="switch">
+                <input type="checkbox" id="showAchievementsToggle" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+</section>
+
+    <div class="profile-settings-save-wrap">
+    <button class="main-btn profile-settings-save-btn profile-settings-save-btn--inactive"
+        type="button"
+        id="saveProfileBtn"
+        disabled>
+    Сохранить изменения
+</button>
+</div>
+
+<div class="logout-wrap">
+    <button class="logout-btn" type="button">Выйти</button>
+</div>
+</div>
+
+<nav class="bottom-bar">
+    <a href="/profile" class="bottom-link active">
+        <span class="bottom-icon">◉</span>
+        <span>Профиль</span>
+    </a>
+    <a href="/" class="bottom-link">
+        <span class="bottom-icon">⌂</span>
+        <span>Главная</span>
+    </a>
+    <a href="/circles" class="bottom-link">
+        <span class="bottom-icon">◌</span>
+        <span>Кружки</span>
+    </a>
+</nav>
+
+<div class="modal-overlay hidden" id="achievementModal">
+    <div class="modal-panel achievement-modal-panel">
+        <div class="row-between">
+            <h3>Достижение</h3>
+            <button type="button" class="plain-close-btn" id="closeAchievementModalBtn">✕</button>
+        </div>
+
+        <div class="achievement-modal-content">
+            <div class="achievement-modal-icon-wrap">
+                <img id="achievementModalIcon" src="" alt="achievement">
+            </div>
+            <div class="achievement-modal-title" id="achievementModalTitle"></div>
+            <div class="achievement-modal-description" id="achievementModalDescription"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay hidden" id="historyModal">
+    <div class="modal-panel history-modal-panel">
+        <div class="row-between">
+            <h3>История сессий</h3>
+            <button type="button" class="plain-close-btn" id="closeHistoryModalBtn">✕</button>
+        </div>
+
+        <div id="historyModalList" class="history-list history-list--modal"></div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+{% endblock %}

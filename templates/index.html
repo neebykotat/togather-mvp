@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<header class="screen-header home-header">
+    <a href="/profile" class="header-avatar-link" id="headerAvatarLink">
+        <img id="headerAvatar" src="" alt="Профиль">
+    </a>
+
+    <div class="home-top-center">
+        <div class="hand-date" id="currentDate">Текущая дата</div>
+        <div class="welcome-text" id="greetingText">Привет, имя пользователя!</div>
+    </div>
+
+
+</header>
+
+<section class="soft-card today-card">
+    <div class="row-between">
+        <h2 class="block-title">Моя цель сегодня</h2>
+        <button class="pill-btn" type="button" id="editTodayGoalBtn">Изменить</button>
+    </div>
+    <div class="today-goal-text-small" id="todayGoalText">Текущая цель на сегодня</div>
+</section>
+
+<section class="page-block">
+    <h2 class="block-title page-block-title">Мои цели</h2>
+    <div class="soft-card goals-card">
+        <div id="goalsList" class="goal-list"></div>
+        <button class="plus-fab" type="button" id="openGoalFormBtn">＋</button>
+    </div>
+</section>
+
+<section class="page-block">
+    <div class="row-between">
+        <h2 class="block-title page-block-title">Сейчас в фокусе</h2>
+
+    </div>
+    <div class="soft-card focus-friends-card">
+        <div id="friendsFocusRow" class="avatar-row"></div>
+    </div>
+</section>
+
+<button class="timer-floating-btn" type="button" onclick="window.location.href='/focus'">⌛</button>
+
+<nav class="bottom-bar">
+    <a href="/profile" class="bottom-link">
+        <span class="bottom-icon">◉</span>
+        <span>Профиль</span>
+    </a>
+    <a href="/" class="bottom-link active">
+        <span class="bottom-icon">⌂</span>
+        <span>Главная</span>
+    </a>
+    <a href="/circles" class="bottom-link">
+        <span class="bottom-icon">◌</span>
+        <span>Кружки</span>
+    </a>
+</nav>
+
+<div class="modal-overlay hidden" id="goalModal">
+    <div class="modal-panel">
+        <div class="row-between">
+            <h3 id="goalModalTitle">Новая цель</h3>
+            <button type="button" class="plain-close-btn" id="closeGoalFormBtn">✕</button>
+        </div>
+
+        <form id="goalForm">
+            <input type="hidden" id="editingGoalId">
+            <input type="hidden" id="goalType" value="today">
+
+            <input type="text" id="title" placeholder="Название цели" required>
+            <textarea id="description" placeholder="Описание"></textarea>
+
+            <label class="checkbox-row">
+                <input type="checkbox" id="is_recurring">
+                Повторяющаяся цель
+            </label>
+
+            <button type="submit" class="main-btn" id="goalSubmitBtn">Сохранить</button>
+        </form>
+    </div>
+</div>
+
+<div class="reaction-modal-overlay hidden" id="reactionModal">
+    <div class="reaction-backdrop"></div>
+    <div class="reaction-modal" id="reactionModalBox">
+        <div class="reaction-modal-avatar-wrap">
+            <img id="reactionAvatar" src="" alt="Друг">
+        </div>
+        <div class="reaction-modal-name" id="reactionName">Имя пользователя</div>
+        <div class="reaction-modal-actions">
+            <button type="button">👍</button>
+            <button type="button">🔥</button>
+            <button type="button">☺</button>
+            <button type="button">👏</button>
+            <button type="button">✓</button>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

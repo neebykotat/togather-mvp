@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Кружки{% endblock %}
+
+{% block content %}
+<div id="circlesListScreen">
+    <header class="screen-header">
+        <a href="/profile" class="header-avatar-link circles-header-avatar">
+            <img id="circlesCurrentUserAvatar" src="" alt="Профиль">
+        </a>
+        <div class="screen-title">Мои кружки</div>
+        <div class="header-placeholder"></div>
+    </header>
+
+    <section class="page-block">
+        <div id="circlesList" class="circle-list"></div>
+    </section>
+</div>
+
+<div id="circleDetailScreen" class="hidden">
+    <header class="screen-header">
+        <button class="circle-back-btn" id="backToCirclesBtn" type="button">‹</button>
+        <div class="capsule-title" id="circleNameTitle">Название кружка</div>
+        <button class="circle-settings-avatar-btn" type="button" id="openCircleSettingsBtn">
+            <img id="circleTopAvatar" src="" alt="Кружок">
+        </button>
+    </header>
+
+    <section class="page-block">
+        <div id="eventsList" class="event-feed"></div>
+    </section>
+</div>
+
+<div id="circleSettingsScreen" class="hidden">
+    <header class="screen-header">
+        <button class="circle-back-btn" id="closeCircleSettingsBtn" type="button">‹</button>
+        <div class="screen-title">Настройки кружка</div>
+        <div class="header-placeholder"></div>
+    </header>
+
+    <section class="settings-avatar-wrap">
+        <form id="circleSettingsForm" enctype="multipart/form-data">
+            <input type="file" id="circleAvatarInput" name="avatar" accept="image/*" hidden>
+
+            <button type="button" class="settings-avatar-button" id="circleAvatarButton">
+                <div class="profile-avatar-big profile-avatar-big--settings">
+                    <img id="circleSettingsAvatarPreview" src="" alt="avatar">
+                </div>
+            </button>
+
+            <button type="button" class="settings-name-button" id="editCircleNameBtn">
+                <div class="profile-name-main" id="circleSettingsName">Название кружка</div>
+            </button>
+
+            <div class="hidden settings-name-edit-block" id="circleNameEditBlock">
+                <input type="text" id="circleNameInput" placeholder="Введите новое название">
+            </div>
+        </form>
+    </section>
+
+    <section class="page-block">
+        <div class="soft-card circle-meta-card">
+            <div class="circle-meta-line" id="circleMembersCountText">0 участников</div>
+            <div class="circle-meta-line" id="circleInFocusText">0 в фокусе</div>
+        </div>
+    </section>
+
+    <section class="page-block">
+        <div class="members-settings-list" id="circleMembersSettingsList"></div>
+
+        <div class="members-divider"></div>
+
+        <button class="invite-text-btn" type="button" id="generateInviteLinkBtn">
+            + Пригласить друзей
+        </button>
+    </section>
+
+    <div class="profile-settings-save-wrap">
+        <button class="main-btn profile-settings-save-btn profile-settings-save-btn--inactive"
+                type="button"
+                id="saveCircleSettingsBtn"
+                disabled>
+            Сохранить изменения
+        </button>
+    </div>
+</div>
+
+<nav class="bottom-bar">
+    <a href="/profile" class="bottom-link">
+        <span class="bottom-icon">◉</span>
+        <span>Профиль</span>
+    </a>
+    <a href="/" class="bottom-link">
+        <span class="bottom-icon">⌂</span>
+        <span>Главная</span>
+    </a>
+    <a href="/circles" class="bottom-link active">
+        <span class="bottom-icon">◌</span>
+        <span>Кружки</span>
+    </a>
+</nav>
+
+<div class="reaction-modal-overlay hidden" id="circleReactionModal">
+    <div class="reaction-backdrop"></div>
+    <div class="reaction-modal">
+        <div class="reaction-modal-avatar-wrap">
+            <img id="circleReactionAvatar" src="" alt="Пользователь">
+        </div>
+        <div class="reaction-modal-name" id="circleReactionName">Пользователь</div>
+        <div class="reaction-modal-actions" id="circleReactionActions">
+            <button type="button" data-emoji="👍">👍</button>
+            <button type="button" data-emoji="🔥">🔥</button>
+            <button type="button" data-emoji="☺">☺</button>
+            <button type="button" data-emoji="👏">👏</button>
+            <button type="button" data-emoji="✓">✓</button>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/circles.js') }}"></script>
+{% endblock %}

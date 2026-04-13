@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Итоги сессии{% endblock %}
+
+{% block content %}
+<header class="screen-header result-header">
+    <div></div>
+    <div></div>
+    <button class="plain-close-btn result-close" type="button" onclick="window.location.href='/'">✕</button>
+</header>
+
+<section class="result-top">
+    <div class="result-title">Сессия завершена!</div>
+    <div class="result-minutes"><span id="resultMinutes">50</span> <span class="result-minutes-unit">мин</span></div>
+    <div class="result-focus-text">в фокусе</div>
+</section>
+
+<section class="page-block hidden" id="resultGoalBlock">
+    <div class="soft-card result-goal-card">
+        <div class="result-goal-title">Выполненная цель</div>
+        <div class="result-goal-row">
+            <span class="done-circle">✓</span>
+            <span class="result-goal-name" id="resultGoalTitle">Цель</span>
+        </div>
+    </div>
+</section>
+
+<section class="page-block">
+    <h2 class="block-title page-block-title">Поддержка от друзей</h2>
+    <div class="soft-card support-list-card" id="supportList"></div>
+</section>
+
+<section class="page-block">
+    <h2 class="block-title page-block-title">Поддержать друзей!</h2>
+    <div class="soft-card focus-friends-card">
+        <div id="supportFriendsRow" class="avatar-row"></div>
+    </div>
+</section>
+
+<div class="big-action-wrap result-action-wrap">
+    <button class="capsule-main-btn" type="button" onclick="window.location.href='/focus'">Новая сессия</button>
+</div>
+
+<script>
+    window.SESSION_ID = "{{ session_id }}";
+</script>
+<script src="{{ url_for('static', filename='js/session_result.js') }}"></script>
+{% endblock %}

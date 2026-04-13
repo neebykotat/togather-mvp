@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Фокус-сессия{% endblock %}
+
+{% block content %}
+<div id="focusSetupScreen">
+    <header class="screen-header">
+        <button class="circle-back-btn" type="button" onclick="window.location.href='/'">‹</button>
+        <div class="capsule-title">Новая сессия</div>
+        <div class="header-placeholder"></div>
+    </header>
+
+    <section class="page-block">
+        <h2 class="block-title page-block-title">К какой цели привязать сессию?</h2>
+        <div class="soft-card select-card">
+            <select id="goalSelect"></select>
+        </div>
+    </section>
+    <section class="page-block">
+        <h2 class="block-title page-block-title">В рамках какого кружка проходит сессия?</h2>
+        <div class="soft-card select-card">
+            <select id="circleSelect"></select>
+        </div>
+    </section>
+
+    <section class="page-block">
+        <h2 class="block-title page-block-title">Режим</h2>
+        <div class="mode-grid">
+            <button class="mode-card active" data-mode="pomodoro" data-work="25" data-break="5" type="button">
+                <span class="mode-name">Pomodoro</span>
+                <span class="mode-time">25/5</span>
+            </button>
+
+            <button class="mode-card" data-mode="short" data-work="5" data-break="2" type="button">
+                <span class="mode-name">Короткий</span>
+                <span class="mode-time">5/2</span>
+            </button>
+
+            <button class="mode-card" data-mode="long" data-work="15" data-break="5" type="button">
+                <span class="mode-name">Длинный</span>
+                <span class="mode-time">15/5</span>
+            </button>
+
+            <button class="mode-card mode-card--custom" data-mode="custom" type="button">
+                <span class="mode-name">Настраиваемый</span>
+                <span class="mode-time" id="customModeLabel">20/5</span>
+            </button>
+        </div>
+    </section>
+
+    <div class="big-action-wrap">
+        <button class="capsule-main-btn" id="startBtn" type="button">Старт</button>
+    </div>
+</div>
+
+<div id="focusActiveScreen" class="hidden">
+    <header class="screen-header center-header">
+        <div></div>
+        <div class="capsule-title">Фокус-сессия</div>
+        <div></div>
+    </header>
+
+    <section class="active-timer-section">
+        <div class="active-phase-label" id="activePhaseLabel">Работа</div>
+        <div class="active-timer" id="timer">25:00</div>
+        <div class="active-goal-name" id="activeGoalLabel">Без цели</div>
+
+        <div class="active-actions">
+            <button class="stop-round-btn" id="stopBtn" type="button">СТОП</button>
+
+            <button class="progress-circle-btn" id="pauseBtn" type="button">
+                <svg class="progress-ring" width="120" height="120" viewBox="0 0 120 120">
+                    <circle class="progress-ring-bg" cx="60" cy="60" r="50"></circle>
+                    <circle class="progress-ring-fill" id="progressRingFill" cx="60" cy="60" r="50"></circle>
+                </svg>
+                <span class="progress-circle-icon" id="pauseBtnIcon">‖</span>
+            </button>
+        </div>
+    </section>
+
+    <section class="page-block active-friends-block">
+        <h2 class="block-title page-block-title">Друзья в фокусе</h2>
+        <div class="soft-card focus-friends-card">
+            <div id="focusFriendsRow" class="avatar-row"></div>
+        </div>
+    </section>
+</div>
+
+<div class="modal-overlay hidden" id="customModeModal">
+    <div class="modal-panel">
+        <div class="row-between">
+            <h3>Настраиваемый режим</h3>
+            <button type="button" class="plain-close-btn" id="closeCustomModeModalBtn">✕</button>
+        </div>
+
+        <label>Рабочая сессия (мин)</label>
+        <input type="number" id="customWorkInput" min="1" max="180" value="20">
+
+        <label>Перерыв (мин)</label>
+        <input type="number" id="customBreakInput" min="1" max="60" value="5">
+
+        <button class="main-btn" type="button" id="saveCustomModeBtn">Сохранить</button>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/focus.js') }}"></script>
+{% endblock %}
