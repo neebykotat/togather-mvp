@@ -68,8 +68,7 @@ function openRegularGoalModal() {
 function openEditGoalModal(goal) {
     editingGoalIdInput.value = goal.id;
 
-    const today = new Date().toISOString().split("T")[0];
-    const isTodayGoal = goal.scheduled_date === today;
+    const isTodayGoal = goal.goal_type === "today";
 
     document.getElementById("goalType").value = isTodayGoal ? "today" : "regular";
 

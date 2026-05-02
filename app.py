@@ -1,5 +1,9 @@
 import os
 import json
+import requests
+
+from pathlib import Path
+from dotenv import load_dotenv
 from datetime import date
 from uuid import uuid4
 
@@ -8,6 +12,9 @@ from werkzeug.utils import secure_filename
 
 from db import get_connection, run_query
 from psycopg2 import OperationalError
+
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(BASE_DIR / ".env")
 
 app = Flask(__name__)
 app.secret_key = "togather-dev-secret-key"
@@ -19,6 +26,45 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 CURRENT_USER_ID = "11111111-1111-1111-1111-111111111111"
+
+BITRIX_WEBHOOK_URL = os.getenv("BITRIX_WEBHOOK_URL")
+BITRIX_ENTITY_TYPE_ID = int(os.getenv("BITRIX_ENTITY_TYPE_ID", "1042"))
+
+
+def map_goal_status_to_bitrix(status):
+    mapping = {
+        "pending": "44",
+        "in_progress": "46",
+        "completed": "48",
+        "skipped": "44",
+    }
+    return mapping.get(status, "44")
+
+def send_goal_to_bitrix(goal):
+    if not BITRIX_WEBHOOK_URL:
+        print("BITRIX_WEBHOOK_URL is not set")
+        return None
+
+    url = f"{BITRIX_WEBHOOK_URL}crm.item.add.json"
+
+    payload = {
+        "entityTypeId": BITRIX_ENTITY_TYPE_ID,
+        "fields": {
+            "title": goal["title"],
+            "ufCrm8_1777712131": goal.get("description") or "",
+            "ufCrm8_1777712461": goal["scheduled_date"].isoformat(),
+            "ufCrm8_1777712479": map_goal_status_to_bitrix(goal["status"]),
+            "ufCrm8_1777712517": "Y" if goal["is_recurring"] else "N",
+        }
+    }
+
+    try:
+        response = requests.post(url, json=payload, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as error:
+        print(f"Bitrix integration error: {error}")
+        return None
 
 def allowed_file(filename):
     if not filename:
@@ -64,7 +110,7 @@ def get_goals():
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT id, title, description, scheduled_date, status, is_recurring, created_at
+        SELECT id, title, description, scheduled_date, status, is_recurring, created_at, goal_type
         FROM goals
         WHERE user_id = %s
         ORDER BY created_at DESC
@@ -82,7 +128,8 @@ def get_goals():
             "scheduled_date": row[3].isoformat(),
             "status": row[4],
             "is_recurring": row[5],
-            "created_at": row[6].isoformat()
+            "created_at": row[6].isoformat(),
+            "goal_type": row[7]
         }
         for row in rows
     ]
@@ -95,76 +142,82 @@ def create_goal():
     data = request.get_json()
 
     title = data["title"]
-    description = data.get("description")
-    goal_type = data.get("goal_type", "today")
+    description = data.get("description") or ""
+    goal_type = data.get("goal_type", "regular")
 
-    if goal_type == "regular":
-        is_recurring = data.get("is_recurring", False)
-        scheduled_date = date.today()  # пока оставляем так, если позже добавим отдельную дату для обычной цели — поменяем
-    else:
+    if goal_type == "today":
         is_recurring = False
-        scheduled_date = date.today()
+    else:
+        is_recurring = data.get("is_recurring", False)
+
+    scheduled_date = date.today()
 
     conn = get_connection()
     cur = conn.cursor()
 
     cur.execute("""
-        INSERT INTO goals (user_id, title, description, scheduled_date, status, is_recurring)
-        VALUES (%s, %s, %s, %s, 'pending', %s)
+        INSERT INTO goals (
+            user_id, title, description, scheduled_date,
+            status, is_recurring, goal_type
+        )
+        VALUES (%s, %s, %s, %s, 'pending', %s, %s)
         RETURNING id
     """, (
         CURRENT_USER_ID,
         title,
         description,
         scheduled_date,
-        is_recurring
+        is_recurring,
+        goal_type
     ))
 
     goal_id = cur.fetchone()[0]
     conn.commit()
 
+    bitrix_goal = {
+        "title": title,
+        "description": description,
+        "scheduled_date": scheduled_date,
+        "status": "pending",
+        "is_recurring": is_recurring,
+    }
+
+    bitrix_response = send_goal_to_bitrix(bitrix_goal)
+
     cur.close()
     conn.close()
 
-    return jsonify({"id": str(goal_id)}), 201
-
+    return jsonify({
+        "id": str(goal_id),
+        "bitrix_response": bitrix_response
+    }), 201
 
 @app.route("/api/goals/<goal_id>", methods=["PATCH"])
 def update_goal(goal_id):
     data = request.get_json()
 
+    title = data.get("title", "").strip()
+    description = data.get("description") or ""
+    goal_type = data.get("goal_type", "regular")
+    is_recurring = False if goal_type == "today" else data.get("is_recurring", False)
+
     conn = get_connection()
     cur = conn.cursor()
-
-    cur.execute("""
-        SELECT scheduled_date
-        FROM goals
-        WHERE id = %s AND user_id = %s
-    """, (goal_id, CURRENT_USER_ID))
-    row = cur.fetchone()
-
-    if not row:
-        cur.close()
-        conn.close()
-        return jsonify({"message": "Goal not found"}), 404
-
-    scheduled_date = row[0]
-    is_today_goal = scheduled_date == date.today()
-
-    is_recurring = False if is_today_goal else data.get("is_recurring", False)
 
     cur.execute("""
         UPDATE goals
         SET title = %s,
             description = %s,
             is_recurring = %s,
+            goal_type = %s,
             updated_at = now()
         WHERE id = %s AND user_id = %s
         RETURNING id
     """, (
-        data["title"],
-        data.get("description"),
+        title,
+        description,
         is_recurring,
+        goal_type,
         goal_id,
         CURRENT_USER_ID
     ))
@@ -174,6 +227,9 @@ def update_goal(goal_id):
 
     cur.close()
     conn.close()
+
+    if not updated:
+        return jsonify({"message": "Goal not found"}), 404
 
     return jsonify({"message": "Goal updated", "id": str(updated[0])})
 
@@ -256,28 +312,19 @@ def get_home_data():
             FROM goals
             WHERE user_id = %s
               AND scheduled_date = CURRENT_DATE
+              AND goal_type = 'today'
               AND status != 'completed'
             ORDER BY created_at DESC
             LIMIT 1
         """, (CURRENT_USER_ID,), fetchone=True)
 
-        if current_goal_row:
-            current_goal_id = current_goal_row[0]
-
-            goal_rows = run_query("""
-                SELECT id, title, description, scheduled_date, status, is_recurring, created_at
-                FROM goals
-                WHERE user_id = %s
-                  AND id != %s
-                ORDER BY created_at DESC
-            """, (CURRENT_USER_ID, current_goal_id), fetchall=True)
-        else:
-            goal_rows = run_query("""
-                SELECT id, title, description, scheduled_date, status, is_recurring, created_at
-                FROM goals
-                WHERE user_id = %s
-                ORDER BY created_at DESC
-            """, (CURRENT_USER_ID,), fetchall=True)
+        goal_rows = run_query("""
+            SELECT id, title, description, scheduled_date, status, is_recurring, created_at, goal_type
+            FROM goals
+            WHERE user_id = %s
+              AND goal_type = 'regular'
+            ORDER BY created_at DESC
+        """, (CURRENT_USER_ID,), fetchall=True)
 
         friend_rows = run_query("""
             SELECT u.id, u.full_name, u.avatar_url
@@ -307,7 +354,8 @@ def get_home_data():
                     "scheduled_date": row[3].isoformat(),
                     "status": row[4],
                     "is_recurring": row[5],
-                    "created_at": row[6].isoformat()
+                    "created_at": row[6].isoformat(),
+                    "goal_type": row[7]
                 }
                 for row in goal_rows
             ],
